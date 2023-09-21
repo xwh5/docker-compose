@@ -1,0 +1,189 @@
+---
+setup.template.settings:
+  index.number_of_shards: 1
+  index.codec: best_compression
+  index.number_of_replicas: 0
+
+setup.kibana:
+  host: "${KIBANA_HOST:kibana:5601}"
+
+output.elasticsearch:
+  hosts: '${ELASTICSEARCH_HOSTS:elasticsearch:9200}'
+  username: '${ELASTICSEARCH_USERNAME:}'
+  password: '${ELASTICSEARCH_PASSWORD:}'
+
+logging.json: true
+logging.metrics.enabled: false
+
+monitoring.enabled: true
+
+processors:
+  - add_host_metadata: ~
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_kubernetes_metadata: ~
+###################################################################################################
+## autodiscover
+###################################################################################################
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      templates:
+        - condition:
+            contains:
+              docker.container.name: "opbeans-"
+          config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/*/${data.docker.container.id}-json.log"
+              include_lines: ['^{']
+              tail_files: true
+              processors:
+              - add_tags:
+                  tags: [json]
+                  target: "parser_type"
+              - decode_json_fields:
+                  fields:
+                    - message
+                  target: ""
+                  overwrite_keys: true
+                  add_error_key: true
+              - drop_fields:
+                  fields:
+                    - service
+                    - event
+                    - url
+                    - error
+              fields_under_root: true
+        - condition:
+            contains:
+              docker.container.name: "opbeans-"
+          config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/*/${data.docker.container.id}-json.log"
+              tail_files: true
+              multiline.pattern: '^[[:blank:]]'
+              multiline.negate: false
+              multiline.match: after
+              exclude_lines: ['^{']
+              processors:
+              - add_tags:
+                  tags: [no_json]
+                  target: "parser_type"
+        - condition:
+            contains:
+              docker.container.name: "kibana"
+          config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/*/${data.docker.container.id}-json.log"
+              tail_files: true
+              json.add_error_key: true
+              json.overwrite_keys: true
+              json.keys_under_root: true
+        - condition:
+            contains:
+              docker.container.name: "elasticsearch"
+          config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/*/${data.docker.container.id}-json.log"
+              tail_files: true
+              json.add_error_key: true
+              json.overwrite_keys: true
+              json.keys_under_root: true
+        - condition:
+            contains:
+              docker.container.name: "metricbeat"
+          config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/*/${data.docker.container.id}-json.log"
+              tail_files: true
+              json.add_error_key: true
+              json.overwrite_keys: true
+              json.keys_under_root: true
+        - condition:
+            contains:
+              docker.container.name: "heartbeat"
+          config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/*/${data.docker.container.id}-json.log"
+              tail_files: true
+              json.add_error_key: true
+              json.overwrite_keys: true
+              json.keys_under_root: true
+        - condition:
+            contains:
+              docker.container.name: "filebeat"
+          config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/*/${data.docker.container.id}-json.log"
+              tail_files: true
+              json.add_error_key: true
+              json.overwrite_keys: true
+              json.keys_under_root: true
+        - condition:
+            contains:
+              docker.container.name: "apm-server"
+          config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/*/${data.docker.container.id}-json.log"
+              tail_files: true
+              json.add_error_key: true
+              json.overwrite_keys: true
+              json.keys_under_root: true
+              processors:
+              - rename:
+                  fields:
+                   - from: "error"
+                     to: "error_apm_server"
+                  ignore_missing: false
+                  fail_on_error: true
+        - condition:
+            contains:
+              docker.container.name: "postgres"
+          config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/*/${data.docker.container.id}-json.log"
+              tail_files: true
+              multiline.pattern: '^\t'
+              multiline.negate: false
+              multiline.match: after
+        - condition:
+            and:
+              - not:
+                  contains:
+                    docker.container.name: "apm-server"
+              - not:
+                  contains:
+                    docker.container.name: "filebeat"
+              - not:
+                  contains:
+                    docker.container.name: "heartbeat"
+              - not:
+                  contains:
+                    docker.container.name: "kibana"
+              - not:
+                  contains:
+                    docker.container.name: "metricbeat"
+              - not:
+                  contains:
+                    docker.container.name: "opbeans-"
+              - not:
+                  contains:
+                    docker.container.name: "postgres"
+          config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/*/${data.docker.container.id}-json.log"
+              tail_files: true
+
+http.enabled: true
+http.host: localhost
+http.port: 5066

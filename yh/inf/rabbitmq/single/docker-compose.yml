@@ -1,0 +1,12 @@
+version: '3'
+services:
+  yh-rabbitmq:
+    image: "bitnami/rabbitmq:3.8.8-debian-10-r17"
+    restart: "no"
+    environment:
+      RABBITMQ_VHOST: "/"
+      RABBITMQ_USERNAME: "rabbitmq"
+      RABBITMQ_PASSWORD: "123456"
+    ports:
+      - 15672:15672
+      - 5672:5672

@@ -1,0 +1,12 @@
+version: "3"
+services:
+  mssql-exporter:
+    image: "awaragi/prometheus-mssql-exporter"
+    environment:
+      - "SERVER=127.0.0.1"
+      - "PORT=1433"
+      - "USERNAME=sa"
+      - "PASSWORD=1234"
+    network_mode: bridge
+    ports:
+      - "4000:4000"

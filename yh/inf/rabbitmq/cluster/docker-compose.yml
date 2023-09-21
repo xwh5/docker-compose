@@ -1,0 +1,69 @@
+version: "3"
+services:
+  yh-rabbitmq-1:
+    image: "bitnami/rabbitmq:3.8.8-debian-10-r17"
+    hostname: "node1"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+    environment:
+      RABBITMQ_VHOST: "/"
+      RABBITMQ_USERNAME: "rabbitmq"
+      RABBITMQ_PASSWORD: "123456"
+      RABBITMQ_ERL_COOKIE: "3e951e578cf14e26"
+      RABBITMQ_NODE_TYPE: "queue-disc"
+      RABBITMQ_NODE_NAME: "mycluster@node1"
+      RABBITMQ_PLUGINS: "rabbitmq_management"
+    volumes:
+      - "yh-rabbitmq-data:/bitnami"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  yh-rabbitmq-2:
+    depends_on:
+      - "yh-rabbitmq-1"
+    image: "bitnami/rabbitmq:3.8.8-debian-10-r17"
+    hostname: "node2"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    environment:
+      RABBITMQ_VHOST: "/"
+      RABBITMQ_USERNAME: "rabbitmq"
+      RABBITMQ_PASSWORD: "123456"
+      RABBITMQ_ERL_COOKIE: "3e951e578cf14e26"
+      RABBITMQ_NODE_TYPE: "queue-ram"
+      RABBITMQ_NODE_NAME: "mycluster@node2"
+      RABBITMQ_CLUSTER_NODE_NAME: "mycluster@node1"
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+    
+  yh-rabbitmq-3:
+    depends_on:
+      - "yh-rabbitmq-1"
+    image: "bitnami/rabbitmq:3.8.8-debian-10-r17"
+    hostname: "node3"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    environment:
+      RABBITMQ_VHOST: "/"
+      RABBITMQ_USERNAME: "rabbitmq"
+      RABBITMQ_PASSWORD: "123456"
+      RABBITMQ_ERL_COOKIE: "3e951e578cf14e26"
+      RABBITMQ_NODE_TYPE: "queue-ram"
+      RABBITMQ_NODE_NAME: "mycluster@node3"
+      RABBITMQ_CLUSTER_NODE_NAME: "mycluster@node1"
+    ports:
+      - "5674:5672"
+      - "15674:15672"
+volumes:
+  yh-rabbitmq-data: {}

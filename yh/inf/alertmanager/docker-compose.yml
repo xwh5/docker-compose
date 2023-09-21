@@ -1,0 +1,13 @@
+version: '3'
+services:
+  alertmanager:
+    image: "bitnami/alertmanager:latest"
+    volumes:
+      - yh_alertmanager_conf:/opt/bitnami/alertmanager/conf
+    restart: "no"
+    network_mode: bridge
+    ports:
+      - "9093:9093"
+
+volumes:
+  yh_alertmanager_conf: {}

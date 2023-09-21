@@ -1,0 +1,12 @@
+version: '3'
+services:
+  grafana:
+    image: "bitnami/grafana:latest"
+    volumes:
+      - yh_grafana_conf:/opt/bitnami/grafana/conf
+    network_mode: "bridge"
+    ports:
+      - "3000:3000"
+    restart: "no"
+volumes:
+  yh_grafana_conf: {}

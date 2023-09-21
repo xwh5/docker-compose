@@ -1,0 +1,156 @@
+filebeat.inputs:
+- type: kafka
+  hosts:
+    - kafka:9092
+  topics: ["YHWms.Operations.TLog.pro"]
+  group_id: "YHWms.Operations.TLog.pro.filebeat"
+  tags: ["YHWms.Operations.TLog.pro"]
+  parsers:
+    - ndjson:
+  processors:
+    - fingerprint:
+        fields: ["id"]
+        target_field: "@metadata._id"
+- type: kafka
+  hosts:
+    - kafka:9092
+  topics: ["YHWms.Express.AuditLog.pro"]
+  group_id: "YHWms.Express.AuditLog.pro.filebeat"
+  tags: ["YHWms.Express.AuditLog.pro"]
+  parsers:
+    - ndjson:
+  processors:
+    - decode_json_fields:
+        fields: ["actions","exceptions","extraProperties","entityChanges","comments"]
+        process_array: false
+        max_depth: 1
+        target: ""
+        overwrite_keys: false
+- type: kafka
+  hosts:
+    - kafka:9092
+  topics: ["YHWms.Express.RequestLog.pro"]
+  group_id: "YHWms.Express.RequestLog.pro.filebeat"
+  tags: ["YHWms.Express.RequestLog.pro"]
+  parsers:
+    - ndjson:
+  processors:
+    - fingerprint:
+        fields: ["id"]
+        target_field: "@metadata._id"
+- type: kafka
+  hosts:
+    - kafka:9092
+  topics: ["YHWms.Adapter.QiMen.RequestLog.pro"]
+  group_id: "YHWms.Adapter.QiMen.RequestLog.pro.filebeat"
+  tags: ["YHWms.Adapter.QiMen.RequestLog.pro"]
+  parsers:
+    - ndjson:
+  processors:
+    - fingerprint:
+        fields: ["id"]
+        target_field: "@metadata._id"
+- type: kafka
+  hosts:
+    - kafka:9092
+  topics: ["YHWms.Operations.AuditLog.pro"]
+  group_id: "YHWms.Operations.AuditLog.pro.filebeat"
+  tags: ["YHWms.Operations.AuditLog.pro"]
+  parsers:
+    - ndjson:
+  processors:
+    - decode_json_fields:
+        fields: ["actions","exceptions","extraProperties","entityChanges","comments"]
+        process_array: false
+        max_depth: 1
+        target: ""
+        overwrite_keys: false
+- type: kafka
+  hosts:
+    - kafka:9092
+  topics: ["YHWms.Operations.OrderAuditLog.pro"]
+  group_id: "YHWms.Operations.OrderAuditLog.pro.filebeat"
+  tags: ["YHWms.Operations.OrderAuditLog.pro"]
+  #initial_offset: newest
+  processors:
+    - fingerprint:
+        fields: ["id"]
+        target_field: "@metadata._id"
+  parsers:
+    - ndjson:
+- type: kafka
+  hosts:
+    - kafka:9092
+  topics: ["YHWms.Adapter.Boe.RequestLog.pro"]
+  group_id: "YHWms.Adapter.Boe.RequestLog.pro.filebeat"
+  tags: ["YHWms.Adapter.Boe.RequestLog.pro"]
+  parsers:
+    - ndjson:
+  processors:
+    - fingerprint:
+        fields: ["id"]
+        target_field: "@metadata._id"
+- type: kafka
+  hosts:
+    - kafka:9092
+  topics: ["YHWms.Adapter.Nike.RequestLog.pro"]
+  group_id: "YHWms.Adapter.Nike.RequestLog.pro.filebeat"
+  tags: ["YHWms.Adapter.Nike.RequestLog.pro"]
+  parsers:
+    - ndjson:
+  processors:
+    - fingerprint:
+        fields: ["id"]
+        target_field: "@metadata._id"
+- type: kafka
+  hosts:
+    - kafka:9092
+  topics: ["YHWms.Adapter.Standard.RequestLog.pro"]
+  group_id: "YHWms.Adapter.Standard.RequestLog.pro.filebeat"
+  tags: ["YHWms.Adapter.Standard.RequestLog.pro"]
+  parsers:
+    - ndjson:
+  processors:
+    - fingerprint:
+        fields: ["id"]
+        target_field: "@metadata._id"
+processors:
+  - drop_fields:
+      fields: ["agent.ephemeral_id","agent.hostname","agent.id","agent.name","agent.type","agent.version","ecs.version","host.name","kafka.key","kafka.offset"]
+output.elasticsearch:
+  hosts: 'http://elasticsearch:9200'
+  username: "admin"
+  password: "changeme"
+  indices:
+    - index: "yhwms.adapter.boe.requestlog.pro-%{+yyyy.MM.dd}"
+      when.contains:
+        tags: "YHWms.Adapter.Boe.RequestLog.pro"
+    - index: "yhwms.express.auditlog.pro-%{+yyyy.MM.dd}"
+      when.contains:
+        tags: "YHWms.Express.AuditLog.pro"
+    - index: "yhwms.express.requestlog.pro-%{+yyyy.MM.dd}"
+      when.contains:
+        tags: "YHWms.Express.RequestLog.pro"
+    - index: "yhwms.adapter.qimen.requestlog.pro-%{+yyyy.MM.dd}"
+      when.contains:
+        tags: "YHWms.Adapter.QiMen.RequestLog.pro"
+    - index: "yhwms.operations.auditlog.pro-%{+yyyy.MM.dd}"
+      when.contains:
+        tags: "YHWms.Operations.AuditLog.pro"
+    - index: "yhwms.operations.orderauditlog.pro-%{+yyyy.MM.dd}"
+      when.contains:
+        tags: "YHWms.Operations.OrderAuditLog.pro"
+    - index: "yhwms.operations.tlog.pro-%{+yyyy.MM.dd}"
+      when.contains:
+        tags: "YHWms.Operations.TLog.pro"
+    - index: "yhwms.adapter.boe.requestlog.pro-%{+yyyy.MM.dd}"
+      when.contains:
+        tags: "YHWms.Adapter.Boe.RequestLog.pro"
+    - index: "yhwms.adapter.nike.requestlog.pro-%{+yyyy.MM.dd}"
+      when.contains:
+        tags: "YHWms.Adapter.Nike.RequestLog.pro"
+    - index: "yhwms.adapter.standard.requestlog.pro-%{+yyyy.MM.dd}"
+      when.contains:
+        tags: "YHWms.Adapter.Standard.RequestLog.pro"
+setup.template.enabled: false
+setup.ilm.enabled: false

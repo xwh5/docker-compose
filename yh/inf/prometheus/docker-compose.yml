@@ -1,0 +1,16 @@
+version: "3"
+services:
+  prometheus:
+    image: "bitnami/prometheus:latest"
+    volumes:
+      - yh_prometheus_conf:/opt/bitnami/prometheus/conf
+      - yh_prometheus_data:/opt/bitnami/prometheus/data
+    network_mode: "bridge"
+    ports:
+      - "9090:9090"
+    restart: "no"
+
+
+volumes:
+  yh_prometheus_conf: {}
+  yh_prometheus_data: {}

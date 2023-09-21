@@ -1,0 +1,10 @@
+version: "3"
+services:
+  mysqld-exporter:
+    image: "bitnami/mysqld-exporter"
+    environment:
+      DATA_SOURCE_NAME: "username:password@(hostname:3306)/"
+    network_mode: "bridge"
+    ports:
+      - "9104:9104"
+    restart: "no"
